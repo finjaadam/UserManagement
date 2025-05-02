@@ -2,6 +2,7 @@
 namespace Sandstorm\UserManagement\Controller;
 
 use Neos\Flow\I18n\Translator;
+use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Sandstorm\TemplateMailer\Domain\Service\EmailService;
 use Sandstorm\UserManagement\Domain\Model\RegistrationFlow;
 use Sandstorm\UserManagement\Domain\Repository\RegistrationFlowRepository;
@@ -14,6 +15,11 @@ use Neos\Flow\Mvc\Controller\ActionController;
  */
 class RegistrationController extends ActionController
 {
+    /**
+     * @Flow\Inject
+     * @var PersistenceManagerInterface
+     */
+    protected $persistenceManager;
 
     /**
      * @Flow\Inject
