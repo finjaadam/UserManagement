@@ -33,7 +33,7 @@ class RegistrationFlow
 
     /**
      * @var array
-     * @ORM\Column(type="json_array")
+     * @ORM\Column(type="flow_json_array")
      */
     protected $attributes = [];
 
