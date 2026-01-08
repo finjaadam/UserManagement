@@ -125,7 +125,7 @@ class LoginController extends AbstractAuthenticationController
             $this->view->assign('account', $this->securityContext->getAccount());
         } else {
             throw new Exception('RedirectTargetServiceInterface::onAuthenticationSuccess must return either null, an URL string or an ActionRequest object, but was: ' .
-                gettype($result) . ' - ' . get_class($result), 1464164500);
+                gettype($result) . ' - ' . get_class($result)->value, 1464164500);
         }
     }
 
@@ -165,7 +165,7 @@ class LoginController extends AbstractAuthenticationController
             $this->redirect('login');
         } else {
             throw new Exception('RedirectTargetServiceInterface::onLogout must return either null, an URL string or an ActionRequest object, but was: ' .
-                gettype($result) . ' - ' . get_class($result), 1464164500);
+                gettype($result) . ' - ' . get_class($result)->value, 1464164500);
         }
     }
 
