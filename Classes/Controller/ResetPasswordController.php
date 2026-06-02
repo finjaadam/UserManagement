@@ -5,6 +5,7 @@ use Neos\Flow\I18n\Translator;
 use Neos\Flow\Property\TypeConverter\PersistentObjectConverter;
 use Sandstorm\UserManagement\Domain\Model\ResetPasswordFlow;
 use Sandstorm\UserManagement\Domain\Repository\ResetPasswordFlowRepository;
+use Sandstorm\UserManagement\Domain\Service\FindEmailAddressForUserServiceInterface;
 use Sandstorm\UserManagement\Domain\Service\UserCreationServiceInterface;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Mvc\Controller\ActionController;
@@ -51,6 +52,12 @@ class ResetPasswordController extends ActionController
      * @Flow\InjectConfiguration(path="email.subjectResetPassword")
      */
     protected $subjectResetPassword;
+
+    /**
+     * @Flow\Inject
+     * @var FindEmailAddressForUserServiceInterface
+     */
+    protected $findEmailAddressForUserService;
 
     /**
      * @return string
@@ -104,28 +111,32 @@ class ResetPasswordController extends ActionController
                 }
             }
 
-            // Send out a confirmation mail
-            $resetPasswordLink = $this->uriBuilder->reset()->setCreateAbsoluteUri(true)->uriFor(
-                'insertNewPassword',
-                ['token' => $resetPasswordFlow->getResetPasswordToken()],
-                'ResetPassword');
+            $receiverMail = $this->findEmailAddressForUserService->getEmailAddressByAccount($account);
 
-            $this->emailService->sendTemplateEmail(
-                'ResetPasswordToken',
-                $this->getSubjectResetPassword(),
-                [$resetPasswordFlow->getEmail()],
-                [
-                    'resetPasswordLink' => $resetPasswordLink,
-                    'resetPasswordFlow' => $resetPasswordFlow
-                ],
-                'sandstorm_usermanagement_sender_email',
-                [], // cc
-                [], // bcc
-                [], // attachments
-                'sandstorm_usermanagement_replyTo_email'
-            );
+            if ($receiverMail !== null) {
+                // Send out a confirmation mail
+                $resetPasswordLink = $this->uriBuilder->reset()->setCreateAbsoluteUri(true)->uriFor(
+                    'insertNewPassword',
+                    ['token' => $resetPasswordFlow->getResetPasswordToken()],
+                    'ResetPassword');
 
-            $this->resetPasswordFlowRepository->add($resetPasswordFlow);
+                $this->emailService->sendTemplateEmail(
+                    'ResetPasswordToken',
+                    $this->subjectResetPassword,
+                    [$receiverMail],
+                    [
+                        'resetPasswordLink' => $resetPasswordLink,
+                        'resetPasswordFlow' => $resetPasswordFlow
+                    ],
+                    'sandstorm_usermanagement_sender_email',
+                    [], // cc
+                    [], // bcc
+                    [], // attachments
+                    'sandstorm_usermanagement_replyTo_email'
+                );
+
+                $this->resetPasswordFlowRepository->add($resetPasswordFlow);
+            }
         }
 
 
