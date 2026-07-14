@@ -29,5 +29,10 @@
         "psr-4": {
             "Sandstorm\\UserManagement\\": "Classes"
         }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "Sandstorm.UserManagement"
+        }
     }
 }
