@@ -4,6 +4,9 @@ Sandstorm:
     # long enough that the happy-path scenarios (register/request -> poll Mailpit -> open link) don't race it
     activationTokenTimeout: '6 seconds'
     resetPasswordTokenTimeout: '6 seconds'
+    # Sandstorm.UserManagement:Profile requires Neos.Neos:FrontendUser or :Editor (see Policy.yaml);
+    # without this, freshly created/activated test users would get redirected back to /login
+    rolesForNewUsers: ['Neos.Neos:FrontendUser']
 
 Neos:
   Flow:

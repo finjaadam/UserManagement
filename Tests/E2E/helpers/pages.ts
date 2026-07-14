@@ -41,7 +41,10 @@ export class RegistrationPage {
 
   async register(email: string, password: string, passwordConfirmation: string, firstName: string, lastName: string) {
     const form = this.page.locator('form[action="/account/signup/submit"]');
-    await form.locator(USERNAME_FIELD).fill(email);
+    // NOTE: Index.html sets an explicit `name` override on this field (to the Flow auth-token
+    // username field), but Fluid's form.textfield ignores that when `property` is also set - the
+    // field is actually submitted as `registrationFlow[email]`, confirmed via the rendered HTML.
+    await form.locator('[name="registrationFlow[email]"]').fill(email);
     await form.locator('[name="registrationFlow[passwordDto][password]"]').fill(password);
     await form.locator('[name="registrationFlow[passwordDto][passwordConfirmation]"]').fill(passwordConfirmation);
     await form.locator('[name="registrationFlow[attributes][firstName]"]').fill(firstName);
