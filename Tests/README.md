@@ -2,7 +2,7 @@
 
 End-to-end tests for `sandstorm/usermanagement`, using [Playwright](https://playwright.dev) with [playwright-bdd](https://vitalets.github.io/playwright-bdd/) for Gherkin-style BDD scenarios. Tests run against a Dockerised Neos instance (the *system under test*, SUT) — no local Neos installation required.
 
-This branch (`main`) targets **Neos 9** (PHP 8.5, MariaDB 11.4). The `7.0` branch has an equivalent suite targeting Neos 8.
+This branch (`main`) targets **Neos 9** (PHP 8.4, MariaDB 11.4). The `7.0` branch has an equivalent suite targeting Neos 8.
 
 Outgoing mail (account activation / password reset links) is captured by [Mailpit](https://mailpit.axllent.org/) instead of being sent for real; tests read the emails via Mailpit's REST API.
 
