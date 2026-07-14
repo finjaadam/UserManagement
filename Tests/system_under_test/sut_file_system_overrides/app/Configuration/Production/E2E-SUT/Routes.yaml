@@ -18,6 +18,24 @@
     '__enableNewPassword': true
 
 -
+  # ProfileController::editProfileAction()/setNewPasswordAction() both end with
+  # `$this->redirect('index')` (no explicit controller/package/argument overrides). Flow's
+  # Router::resolve() requires an EXACT match of a route's static defaults - including the
+  # `__show*`/`__enable*` ones above - so a plain redirect('index') call (which doesn't supply
+  # those keys) never matches the route above and fails with "Router resolve(): Could not
+  # resolve a route..." (confirmed via `./flow routing:resolve`). This second, plainer route
+  # exists purely so redirect('index') has something to match; real navigation to /profile
+  # still hits the route above first (declared earlier => tried first for incoming requests),
+  # so the plugin-argument defaults are still applied for the normal GET.
+  name: 'E2E: Profile (redirect target, no plugin-argument defaults)'
+  uriPattern: 'profile'
+  defaults:
+    '@package':    'Sandstorm.UserManagement'
+    '@controller': 'Profile'
+    '@action':     'index'
+    '@format':     'html'
+
+-
   name: 'E2E: Profile edit personal data'
   uriPattern: 'profile/edit'
   defaults:

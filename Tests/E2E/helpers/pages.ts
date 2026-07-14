@@ -20,6 +20,9 @@ export class LoginPage {
   }
 
   async logout() {
+    // the logout form only renders on /login (via the ifAuthenticated viewhelper there) - navigate
+    // there first rather than assuming the caller is already on a page that has it (e.g. /profile)
+    await this.goto();
     await this.page.locator('form[action="/logout"] input[type="submit"], form[action="/logout"] button[type="submit"]').click();
   }
 

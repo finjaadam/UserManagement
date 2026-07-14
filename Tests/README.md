@@ -40,7 +40,17 @@ make test-reset-password
 make test-profile
 ```
 
-Playwright starts the Docker containers automatically before each run and stops them afterwards. The first run may take a few minutes while Neos sets itself up inside the container (migrations, demo site import).
+Playwright starts the Docker containers automatically before each run and stops them afterwards (`globalTeardown` runs `docker compose down -v`). The first run may take a few minutes while Neos sets itself up inside the container (migrations, `cr:setup`, demo site import).
+
+**Rebuild after changing `system_under_test/`:** everything under `system_under_test/sut_file_system_overrides/` (Settings.yaml, Routes.yaml, ...) and the `Dockerfile`/`compose-overrides-*.yaml` files are baked into the image at **build time**, not bind-mounted. `make test*` only runs `docker compose up`, which reuses whatever image was last built — it will *not* pick up such changes on its own. After editing anything there, rebuild explicitly first:
+
+```bash
+make sut-down     # tear down any previous container/volumes
+make setup-sut    # docker compose build --pull
+make test         # or make test-<area>
+```
+
+(`Classes/`, `Configuration/`, `Migrations/`, `Resources/` and `composer.json` *are* bind-mounted read/write into the container, so changes to the package's own code/config are picked up on the next container start without a rebuild.)
 
 ### SUT and FLOW_CONTEXT
 
@@ -68,6 +78,35 @@ make sut-down
 ```
 
 Mailpit's web UI is available at http://localhost:8025 while the SUT is running — useful to inspect activation/reset emails by hand.
+
+## Troubleshooting
+
+`make test*` tears the SUT down again once Playwright finishes, so for manual poking start it standalone first:
+
+```bash
+make start-sut   # boots the container in the background and leaves it running
+```
+
+Then, from `Tests/`:
+
+- **Create a user to log in with manually** (there's no default one):
+  ```bash
+  docker compose -f system_under_test/neos9/docker-compose.yaml exec neos \
+    bash -c "./flow sandstormuser:create 'someone@example.com' 'Sup3rSecret!1'"
+  ```
+  Log in at http://localhost:8081/login.
+- **List/check routes** — useful when a redirect or a form's `action` URL doesn't do what you expect:
+  ```bash
+  docker compose -f system_under_test/neos9/docker-compose.yaml exec neos bash -c "./flow routing:list"
+  docker compose -f system_under_test/neos9/docker-compose.yaml exec neos \
+    bash -c "./flow routing:resolve Sandstorm.UserManagement --controller Profile --action index"
+  ```
+  `routing:resolve` simulates exactly what `$this->redirect(...)` does internally — if it says "No route could resolve these values", a plain page load will 404 the same way. This is how we found that a route's static defaults (like the `__show*` plugin-argument ones on the `profile` route) must exactly match whatever a redirect call provides, or the redirect fails to resolve entirely.
+- **Check what actually happened server-side** for a 404/error that doesn't show a stack trace in the browser:
+  ```bash
+  docker compose -f system_under_test/neos9/docker-compose.yaml exec neos bash -c "ls -t Data/Logs/Exceptions/ | head -3"   # uncaught exceptions
+  docker compose -f system_under_test/neos9/docker-compose.yaml exec neos bash -c "grep -i -A15 'Could not resolve' Data/Logs/*.log"  # router warnings (no exception thrown, so not in Exceptions/)
+  ```
 
 ## Directory structure
 
