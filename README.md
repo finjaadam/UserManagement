@@ -288,6 +288,16 @@ Sandstorm\UserManagement\Domain\Service\UserCreationServiceInterface:
   className: 'Your\Package\Domain\Service\YourCustomUserCreationService'
 ```
 
+## Customizing how the reset-password e-mail address is resolved
+By default, the "forgot password" flow sends the reset link to the account identifier the user entered (i.e. username
+and e-mail address are assumed to be identical). If your application decouples usernames from e-mail addresses, you
+can override how the recipient address is resolved by implementing `FindEmailAddressForUserServiceInterface` and
+wiring it up via `Objects.yaml`:
+```YAML
+Sandstorm\UserManagement\Domain\Service\FindEmailAddressForUserServiceInterface:
+  className: 'Your\Package\Domain\Service\YourCustomFindEmailAddressForUserService'
+```
+
 ## Hooking into the login/logout process
 The UserManagement package emits three signals during the login and logout process, into which you can hook
 using Flows [Signals and Slots](http://flowframework.readthedocs.io/en/stable/TheDefinitiveGuide/PartIII/SignalsAndSlots.html)
